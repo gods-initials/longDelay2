@@ -20,16 +20,11 @@ namespace longDelayUI
         private Test currentTest;
         private BindingList<TestOption> testOptions;
         private BindingList<TestOption> testsSelected;
-        private BindingList<string> testsCompleted;
+        private BindingList<TestOption> testsCompleted;
 
         public MainForm()
         {
             InitializeComponent();
-        }
-        private void DisplayStageResult(TestStage ts)
-        {
-            string newText = JObject.FromObject(ts).ToString(Formatting.Indented);
-            Console.Write('1');
         }
 
         private async void btnStart_Click(object sender, EventArgs e)
@@ -59,7 +54,7 @@ namespace longDelayUI
                         this.Invoke(new Action(() =>
                         {
                             string json = JObject.FromObject(stageObj).ToString();
-                            testsCompleted.Add(json);
+                            testsCompleted.Add(new TestOption { TestName = json, Test = null });
                         }));
                     };
                 }
@@ -143,7 +138,7 @@ namespace longDelayUI
             selectedTestsGridView.AutoGenerateColumns = false;
             selectedTestsGridView.DataSource = testsSelected;
 
-            testsCompleted = new BindingList<string> { };
+            testsCompleted = new BindingList<TestOption> { };
             testsCompletedGridView.AutoGenerateColumns = false;
             testsCompletedGridView.DataSource = testsCompleted;
         }

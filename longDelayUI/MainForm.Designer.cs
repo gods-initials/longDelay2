@@ -24,8 +24,6 @@
             this.lblStatus = new System.Windows.Forms.Label();
             this.lblIdLabel = new System.Windows.Forms.Label();
             this.testsCompletedGridView = new System.Windows.Forms.DataGridView();
-            this.ProductID = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.TestStatus = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.txtProductId = new System.Windows.Forms.TextBox();
             this.availableTestsGridView = new System.Windows.Forms.DataGridView();
             this.availableTestName = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -35,6 +33,7 @@
             this.removeTestButton = new System.Windows.Forms.Button();
             this.moveUpButton = new System.Windows.Forms.Button();
             this.moveDownButton = new System.Windows.Forms.Button();
+            this.TestName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.testsCompletedGridView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.availableTestsGridView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.selectedTestsGridView)).BeginInit();
@@ -81,29 +80,20 @@
             // 
             this.testsCompletedGridView.AllowUserToAddRows = false;
             this.testsCompletedGridView.AllowUserToDeleteRows = false;
+            this.testsCompletedGridView.AllowUserToResizeColumns = false;
+            this.testsCompletedGridView.AllowUserToResizeRows = false;
+            this.testsCompletedGridView.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.testsCompletedGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.testsCompletedGridView.ColumnHeadersVisible = false;
             this.testsCompletedGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.ProductID,
-            this.TestStatus});
+            this.TestName});
             this.testsCompletedGridView.Location = new System.Drawing.Point(23, 274);
             this.testsCompletedGridView.Name = "testsCompletedGridView";
             this.testsCompletedGridView.ReadOnly = true;
+            this.testsCompletedGridView.RowHeadersVisible = false;
             this.testsCompletedGridView.Size = new System.Drawing.Size(561, 150);
             this.testsCompletedGridView.TabIndex = 7;
             this.testsCompletedGridView.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.resultsGridView_CellContentClick);
-            // 
-            // ProductID
-            // 
-            this.ProductID.HeaderText = "Изделие";
-            this.ProductID.Name = "ProductID";
-            this.ProductID.ReadOnly = true;
-            // 
-            // TestStatus
-            // 
-            this.TestStatus.HeaderText = "Статус";
-            this.TestStatus.Name = "TestStatus";
-            this.TestStatus.ReadOnly = true;
             // 
             // txtProductId
             // 
@@ -209,6 +199,13 @@
             this.moveDownButton.UseVisualStyleBackColor = true;
             this.moveDownButton.Click += new System.EventHandler(this.moveDownButton_Click);
             // 
+            // TestName
+            // 
+            this.TestName.DataPropertyName = "TestName";
+            this.TestName.HeaderText = "Column1";
+            this.TestName.Name = "TestName";
+            this.TestName.ReadOnly = true;
+            // 
             // MainForm
             // 
             this.ClientSize = new System.Drawing.Size(635, 596);
@@ -236,8 +233,6 @@
         }
 
         private System.Windows.Forms.DataGridView testsCompletedGridView;
-        private System.Windows.Forms.DataGridViewTextBoxColumn ProductID;
-        private System.Windows.Forms.DataGridViewTextBoxColumn TestStatus;
         private System.Windows.Forms.TextBox txtProductId;
         private System.Windows.Forms.DataGridView availableTestsGridView;
         private System.Windows.Forms.DataGridView selectedTestsGridView;
@@ -247,5 +242,6 @@
         private System.Windows.Forms.Button moveDownButton;
         private System.Windows.Forms.DataGridViewTextBoxColumn availableTestName;
         private System.Windows.Forms.DataGridViewTextBoxColumn selectedTestName;
+        private System.Windows.Forms.DataGridViewTextBoxColumn TestName;
     }
 }
