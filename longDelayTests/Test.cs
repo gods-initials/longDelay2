@@ -9,10 +9,6 @@ namespace longDelayTests
 {
     public abstract class Test
     {
-        private bool testSuccessful;
-        private string error = "";
-        private int testDuration;
-
         public List<TestStage> testStages;
 
         private CancellationTokenSource cts;

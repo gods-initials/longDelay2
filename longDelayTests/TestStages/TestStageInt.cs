@@ -6,11 +6,10 @@ namespace longDelayTests.TestStages
 {
     internal class TestStageInt : TestStage
     {
-        private Random rand;
+        public Random rand;
         private int _stageOutput;
         public TestStageInt(string path) : base(path)
         {
-            rand = new Random();
             stageName = "stageInt";
             stageSuccessful = false;
             stageDuration = 3000;
@@ -22,6 +21,7 @@ namespace longDelayTests.TestStages
         }
         public override async Task RunStage(CancellationTokenSource cts)
         {
+            rand = new Random();
             if (!IsStageFinished())
             {
                 await Task.Delay(stageDuration, cts.Token);

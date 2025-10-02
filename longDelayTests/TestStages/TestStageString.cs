@@ -11,7 +11,6 @@ namespace longDelayTests.TestStages
         private string _stageOutput;
         public TestStageString(string path) : base(path)
         {
-            rand = new Random();
             stageName = "stageString";
             stageSuccessful = false;
             stageDuration = 1000;
@@ -28,6 +27,7 @@ namespace longDelayTests.TestStages
         }
         public override async Task RunStage(CancellationTokenSource cts)
         {
+            rand = new Random();
             await Task.Delay(stageDuration, cts.Token);
             stageSuccessful = Convert.ToBoolean(rand.Next(10));
             if (stageSuccessful)

@@ -25,7 +25,9 @@ namespace longDelayTests.TestStages
         protected void RecordStage()
         {
             var existing = JArray.Parse(File.ReadAllText(tmpPath));
-            existing.Add(JObject.FromObject(this));
+            var newJson = JObject.FromObject(this);
+            newJson.Remove("rand");
+            existing.Add(newJson);
             File.WriteAllText(tmpPath, existing.ToString(Formatting.Indented));
         }
         protected bool IsStageFinished()
@@ -35,7 +37,7 @@ namespace longDelayTests.TestStages
             {
                 if (item["stageName"].ToString() == stageName && Convert.ToBoolean(item["stageSuccessful"])==true)
                 {
-                    return false;
+                    return true;
                 }
             }
             return false;

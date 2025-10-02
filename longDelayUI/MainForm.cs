@@ -113,8 +113,8 @@ namespace longDelayUI
             testOptions = new BindingList<TestOption>
             {
                 new TestOption { TestName = "Test 1", Test = new Test1() },
-                new TestOption { TestName = "Test 2", Test = new Test1() },
-                new TestOption { TestName = "Test 3", Test = new Test1() },
+                //new TestOption { TestName = "Test 2", Test = new Test2() },
+                //new TestOption { TestName = "Test 3", Test = new Test3() },
             };
             availableTestsGridView.AutoGenerateColumns = false;
             availableTestsGridView.DataSource = testOptions;
