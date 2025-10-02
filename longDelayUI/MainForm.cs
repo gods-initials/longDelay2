@@ -1,13 +1,16 @@
-﻿using longDelayTests;
-using System.Threading;
-using System;
-using System.Windows.Forms;
-using System.Threading.Tasks;
+﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
-using System.ComponentModel;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using longDelayTests;
+using longDelayTests.TestStages;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace longDelayUI
 {
@@ -17,10 +20,16 @@ namespace longDelayUI
         private Test currentTest;
         private BindingList<TestOption> testOptions;
         private BindingList<TestOption> testsSelected;
+        private BindingList<string> testsCompleted;
 
         public MainForm()
         {
             InitializeComponent();
+        }
+        private void DisplayStageResult(TestStage ts)
+        {
+            string newText = JObject.FromObject(ts).ToString(Formatting.Indented);
+            Console.Write('1');
         }
 
         private async void btnStart_Click(object sender, EventArgs e)
@@ -36,13 +45,24 @@ namespace longDelayUI
                 MessageBox.Show("Выберите один или несколько тестов.");
                 return;
             }
-            btnStart.Enabled = false;
-            btnStop.Enabled = true;
-            lblStatus.Text = "Статус: выполняется тест";
-            cts = new CancellationTokenSource();
             foreach (TestOption testOption in testsSelected)
             {
+                btnStart.Enabled = false;
+                btnStop.Enabled = true;
+                lblStatus.Text = "Статус: выполняется тест";
+                cts = new CancellationTokenSource();
                 currentTest = testOption.Test;
+                foreach (var stage in currentTest.testStages)
+                {
+                    stage.StageCompleted += stageObj =>
+                    {
+                        this.Invoke(new Action(() =>
+                        {
+                            string json = JObject.FromObject(stageObj).ToString();
+                            testsCompleted.Add(json);
+                        }));
+                    };
+                }
                 try
                 {
                     await currentTest.Run(cts);
@@ -57,6 +77,7 @@ namespace longDelayUI
                     btnStop.Enabled = false;
                     cts = null;
                     lblStatus.Text = "Статус: ожидается";
+                }
                 }
             }
             /*
@@ -96,7 +117,6 @@ namespace longDelayUI
                 cts = null;
             }
             */
-        }
 
         private void btnStop_Click(object sender, EventArgs e)
         {
@@ -113,7 +133,7 @@ namespace longDelayUI
             testOptions = new BindingList<TestOption>
             {
                 new TestOption { TestName = "Test 1", Test = new Test1() },
-                //new TestOption { TestName = "Test 2", Test = new Test2() },
+                new TestOption { TestName = "Test 2", Test = new Test2() },
                 //new TestOption { TestName = "Test 3", Test = new Test3() },
             };
             availableTestsGridView.AutoGenerateColumns = false;
@@ -122,6 +142,10 @@ namespace longDelayUI
             testsSelected = new BindingList<TestOption> { };
             selectedTestsGridView.AutoGenerateColumns = false;
             selectedTestsGridView.DataSource = testsSelected;
+
+            testsCompleted = new BindingList<string> { };
+            testsCompletedGridView.AutoGenerateColumns = false;
+            testsCompletedGridView.DataSource = testsCompleted;
         }
 
         private void availableTestsGridView_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -180,6 +204,11 @@ namespace longDelayUI
                 selectedTestsGridView.Rows[transferId + 1].Selected = true;
                 selectedTestsGridView.CurrentCell = selectedTestsGridView.Rows[transferId + 1].Cells[0];
             }
+        }
+
+        private void resultsGridView_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
         }
     }
     public class TestOption

@@ -17,6 +17,7 @@ namespace longDelayTests.TestStages
         public bool stageSuccessful;
         public string stageError;
         protected string tmpPath;
+        public event Action<TestStage> StageCompleted;
         public virtual object StageOutput { get; set; }
         public TestStage(string path)
         {
@@ -41,6 +42,10 @@ namespace longDelayTests.TestStages
                 }
             }
             return false;
+        }
+        protected void OnStageCompleted()
+        {
+            StageCompleted.Invoke(this);
         }
         public abstract Task RunStage(CancellationTokenSource tokenSource);
     }

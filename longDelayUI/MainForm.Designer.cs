@@ -23,7 +23,7 @@
             this.btnStop = new System.Windows.Forms.Button();
             this.lblStatus = new System.Windows.Forms.Label();
             this.lblIdLabel = new System.Windows.Forms.Label();
-            this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.testsCompletedGridView = new System.Windows.Forms.DataGridView();
             this.ProductID = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.TestStatus = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.txtProductId = new System.Windows.Forms.TextBox();
@@ -35,7 +35,7 @@
             this.removeTestButton = new System.Windows.Forms.Button();
             this.moveUpButton = new System.Windows.Forms.Button();
             this.moveDownButton = new System.Windows.Forms.Button();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.testsCompletedGridView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.availableTestsGridView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.selectedTestsGridView)).BeginInit();
             this.SuspendLayout();
@@ -77,19 +77,21 @@
             this.lblIdLabel.TabIndex = 1;
             this.lblIdLabel.Text = "Идентификатор:";
             // 
-            // dataGridView1
+            // testsCompletedGridView
             // 
-            this.dataGridView1.AllowUserToAddRows = false;
-            this.dataGridView1.AllowUserToDeleteRows = false;
-            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.testsCompletedGridView.AllowUserToAddRows = false;
+            this.testsCompletedGridView.AllowUserToDeleteRows = false;
+            this.testsCompletedGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.testsCompletedGridView.ColumnHeadersVisible = false;
+            this.testsCompletedGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.ProductID,
             this.TestStatus});
-            this.dataGridView1.Location = new System.Drawing.Point(23, 274);
-            this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.ReadOnly = true;
-            this.dataGridView1.Size = new System.Drawing.Size(303, 150);
-            this.dataGridView1.TabIndex = 7;
+            this.testsCompletedGridView.Location = new System.Drawing.Point(23, 274);
+            this.testsCompletedGridView.Name = "testsCompletedGridView";
+            this.testsCompletedGridView.ReadOnly = true;
+            this.testsCompletedGridView.Size = new System.Drawing.Size(561, 150);
+            this.testsCompletedGridView.TabIndex = 7;
+            this.testsCompletedGridView.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.resultsGridView_CellContentClick);
             // 
             // ProductID
             // 
@@ -216,7 +218,7 @@
             this.Controls.Add(this.addTestButton);
             this.Controls.Add(this.selectedTestsGridView);
             this.Controls.Add(this.availableTestsGridView);
-            this.Controls.Add(this.dataGridView1);
+            this.Controls.Add(this.testsCompletedGridView);
             this.Controls.Add(this.lblIdLabel);
             this.Controls.Add(this.lblStatus);
             this.Controls.Add(this.btnStop);
@@ -225,7 +227,7 @@
             this.Name = "MainForm";
             this.Text = " ";
             this.Load += new System.EventHandler(this.MainForm_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.testsCompletedGridView)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.availableTestsGridView)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.selectedTestsGridView)).EndInit();
             this.ResumeLayout(false);
@@ -233,7 +235,7 @@
 
         }
 
-        private System.Windows.Forms.DataGridView dataGridView1;
+        private System.Windows.Forms.DataGridView testsCompletedGridView;
         private System.Windows.Forms.DataGridViewTextBoxColumn ProductID;
         private System.Windows.Forms.DataGridViewTextBoxColumn TestStatus;
         private System.Windows.Forms.TextBox txtProductId;

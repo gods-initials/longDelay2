@@ -39,6 +39,7 @@ namespace longDelayTests.TestStages
                 stageError = "Произошла ошибка";
             }
             RecordStage();
+            OnStageCompleted();
         }
     }
 }

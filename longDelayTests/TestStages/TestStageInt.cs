@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -35,6 +36,7 @@ namespace longDelayTests.TestStages
                     stageError = "Произошла ошибка";
                 }
                 RecordStage();
+                OnStageCompleted();
             }            
         }
     }
