@@ -13,6 +13,7 @@ namespace longDelayTests
 
         private CancellationTokenSource cts;
         protected string tmpPath;
+        public string testName;
         public abstract Task Run(CancellationTokenSource tokenSource);
         public Test()
         {

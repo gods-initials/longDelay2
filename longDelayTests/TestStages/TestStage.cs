@@ -18,6 +18,7 @@ namespace longDelayTests.TestStages
         public string stageError;
         protected string tmpPath;
         public event Action<TestStage> StageCompleted;
+        public event Action<TestStage> StageFailed;
         public virtual object StageOutput { get; set; }
         public TestStage(string path)
         {
@@ -43,9 +44,17 @@ namespace longDelayTests.TestStages
             }
             return false;
         }
+        protected void RemoveFailedStageEntry()
+        {
+            var existing = JArray.Parse(File.ReadAllText(tmpPath));
+        }
         protected void OnStageCompleted()
         {
             StageCompleted.Invoke(this);
+        }
+        protected void OnStageFailed()
+        {
+            StageFailed.Invoke(this);
         }
         public abstract Task RunStage(CancellationTokenSource tokenSource);
     }

@@ -7,7 +7,7 @@ namespace longDelayTests.TestStages
 {
     internal class TestStageInt : TestStage
     {
-        public Random rand;
+        private Random rand;
         private int _stageOutput;
         public TestStageInt(string path) : base(path)
         {
@@ -23,21 +23,26 @@ namespace longDelayTests.TestStages
         public override async Task RunStage(CancellationTokenSource cts)
         {
             rand = new Random();
-            if (!IsStageFinished())
+            stageError = "";
+            if (IsStageFinished())
+            {
+                Console.WriteLine($"{stageName} done");
+            }
+            else
             {
                 await Task.Delay(stageDuration, cts.Token);
                 stageSuccessful = Convert.ToBoolean(rand.Next(10));
                 if (stageSuccessful)
                 {
                     StageOutput = rand.Next(0, 100);
+                    RecordStage();
                 }
                 else
                 {
                     stageError = "Произошла ошибка";
-                }
-                RecordStage();
+                }                
                 OnStageCompleted();
-            }            
+            }          
         }
     }
 }

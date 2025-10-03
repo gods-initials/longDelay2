@@ -33,7 +33,10 @@
             this.removeTestButton = new System.Windows.Forms.Button();
             this.moveUpButton = new System.Windows.Forms.Button();
             this.moveDownButton = new System.Windows.Forms.Button();
+            this.productID = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.TestName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.testStageName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.testStageResult = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.testsCompletedGridView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.availableTestsGridView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.selectedTestsGridView)).BeginInit();
@@ -84,9 +87,11 @@
             this.testsCompletedGridView.AllowUserToResizeRows = false;
             this.testsCompletedGridView.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.testsCompletedGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.testsCompletedGridView.ColumnHeadersVisible = false;
             this.testsCompletedGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.TestName});
+            this.productID,
+            this.TestName,
+            this.testStageName,
+            this.testStageResult});
             this.testsCompletedGridView.Location = new System.Drawing.Point(23, 274);
             this.testsCompletedGridView.Name = "testsCompletedGridView";
             this.testsCompletedGridView.ReadOnly = true;
@@ -199,12 +204,33 @@
             this.moveDownButton.UseVisualStyleBackColor = true;
             this.moveDownButton.Click += new System.EventHandler(this.moveDownButton_Click);
             // 
+            // productID
+            // 
+            this.productID.DataPropertyName = "ProductID";
+            this.productID.HeaderText = "ID";
+            this.productID.Name = "productID";
+            this.productID.ReadOnly = true;
+            // 
             // TestName
             // 
             this.TestName.DataPropertyName = "TestName";
-            this.TestName.HeaderText = "Column1";
+            this.TestName.HeaderText = "Тест";
             this.TestName.Name = "TestName";
             this.TestName.ReadOnly = true;
+            // 
+            // testStageName
+            // 
+            this.testStageName.DataPropertyName = "TestStageName";
+            this.testStageName.HeaderText = "Этап";
+            this.testStageName.Name = "testStageName";
+            this.testStageName.ReadOnly = true;
+            // 
+            // testStageResult
+            // 
+            this.testStageResult.DataPropertyName = "TestStageResult";
+            this.testStageResult.HeaderText = "Результат";
+            this.testStageResult.Name = "testStageResult";
+            this.testStageResult.ReadOnly = true;
             // 
             // MainForm
             // 
@@ -242,6 +268,9 @@
         private System.Windows.Forms.Button moveDownButton;
         private System.Windows.Forms.DataGridViewTextBoxColumn availableTestName;
         private System.Windows.Forms.DataGridViewTextBoxColumn selectedTestName;
+        private System.Windows.Forms.DataGridViewTextBoxColumn productID;
         private System.Windows.Forms.DataGridViewTextBoxColumn TestName;
+        private System.Windows.Forms.DataGridViewTextBoxColumn testStageName;
+        private System.Windows.Forms.DataGridViewTextBoxColumn testStageResult;
     }
 }

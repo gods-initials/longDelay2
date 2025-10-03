@@ -28,18 +28,27 @@ namespace longDelayTests.TestStages
         public override async Task RunStage(CancellationTokenSource cts)
         {
             rand = new Random();
-            await Task.Delay(stageDuration, cts.Token);
-            stageSuccessful = Convert.ToBoolean(rand.Next(10));
-            if (stageSuccessful)
+            stageError = "";
+            if (IsStageFinished())
             {
-                StageOutput = RandomString();
+                Console.WriteLine($"{stageName} done");
             }
             else
             {
-                stageError = "Произошла ошибка";
+                await Task.Delay(stageDuration, cts.Token);
+                stageSuccessful = Convert.ToBoolean(rand.Next(10));
+                if (stageSuccessful)
+                {
+                    StageOutput = RandomString();
+                    RecordStage();
+                }
+                else
+                {
+                    stageError = "Произошла ошибка";
+                }
+                OnStageCompleted();
             }
-            RecordStage();
-            OnStageCompleted();
+            
         }
     }
 }

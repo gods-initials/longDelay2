@@ -18,19 +18,55 @@ namespace longDelayUI
     {
         private CancellationTokenSource cts = null;
         private Test currentTest;
+        string selectedProductID;
         private BindingList<TestOption> testOptions;
         private BindingList<TestOption> testsSelected;
-        private BindingList<TestOption> testsCompleted;
+        private BindingList<TestOutput> testsCompleted;
+        private bool eventsLinked = false;
+
+        public struct TestOutput
+        {
+            public string ProductID { get; set; }
+            public string TestName { get; set; }
+            public string TestStageName { get; set; }
+            public string TestStageResult { get; set; }
+        }
+        public class TestOption
+        {
+            public string TestName { get; set; }
+            public Test Test { get; set; }
+        }
 
         public MainForm()
         {
             InitializeComponent();
         }
+        public void StageCompletedResponse(TestStage stageObj)
+        {
+            var json = JObject.FromObject(stageObj);
+            var newEntry = new TestOutput
+            {
+                ProductID = selectedProductID,
+                TestStageName = json["stageName"].ToString(),
+                TestName = currentTest.testName,
+            };
+            if (Convert.ToBoolean(json["stageSuccessful"]) == true)
+            {
+                newEntry.TestStageResult = json["StageOutput"].ToString();
+            }
+            else
+            {
+                newEntry.TestStageResult = json["stageError"].ToString();
+                MessageBox.Show("фейл");
+                btnStop_Click(null, null);
+            }
+            testsCompleted.Add(newEntry);
+        }
 
         private async void btnStart_Click(object sender, EventArgs e)
         {
-            string productId = txtProductId.Text.Trim();
-            if (string.IsNullOrEmpty(productId))
+            selectedProductID = txtProductId.Text.Trim();
+            if (string.IsNullOrEmpty(selectedProductID))
             {
                 MessageBox.Show("Введите идентификатор изделия.");
                 return;
@@ -40,24 +76,24 @@ namespace longDelayUI
                 MessageBox.Show("Выберите один или несколько тестов.");
                 return;
             }
+            if (!eventsLinked)
+            {
+                foreach (var testOption in testsSelected)
+                {
+                    foreach (var stage in testOption.Test.testStages)
+                    {
+                        stage.StageCompleted += StageCompletedResponse;
+                    }
+                    eventsLinked = true;
+                }                
+            }
             foreach (TestOption testOption in testsSelected)
             {
                 btnStart.Enabled = false;
                 btnStop.Enabled = true;
                 lblStatus.Text = "Статус: выполняется тест";
                 cts = new CancellationTokenSource();
-                currentTest = testOption.Test;
-                foreach (var stage in currentTest.testStages)
-                {
-                    stage.StageCompleted += stageObj =>
-                    {
-                        this.Invoke(new Action(() =>
-                        {
-                            string json = JObject.FromObject(stageObj).ToString();
-                            testsCompleted.Add(new TestOption { TestName = json, Test = null });
-                        }));
-                    };
-                }
+                currentTest = testOption.Test;         
                 try
                 {
                     await currentTest.Run(cts);
@@ -138,9 +174,17 @@ namespace longDelayUI
             selectedTestsGridView.AutoGenerateColumns = false;
             selectedTestsGridView.DataSource = testsSelected;
 
-            testsCompleted = new BindingList<TestOption> { };
+            testsCompleted = new BindingList<TestOutput> { };
             testsCompletedGridView.AutoGenerateColumns = false;
             testsCompletedGridView.DataSource = testsCompleted;
+
+            string baseFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string appFolder = Path.Combine(baseFolder, "longDelay2", "temp");
+            string[] filePaths = Directory.GetFiles(appFolder);
+            foreach (string filePath in filePaths)
+            {
+                File.Delete(filePath);
+            }
         }
 
         private void availableTestsGridView_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -205,10 +249,5 @@ namespace longDelayUI
         {
 
         }
-    }
-    public class TestOption
-    {
-        public string TestName { get; set; }
-        public Test Test { get; set; }
     }
 }

@@ -13,6 +13,7 @@ namespace longDelayTests
         private CancellationTokenSource cts;
         public Test1() : base()
         {
+            testName = "Test 1";
             testStages = new List<TestStage>
             {
                 new TestStageInt(tmpPath) {stageName = "stageInt1"},
