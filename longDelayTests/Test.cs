@@ -14,7 +14,20 @@ namespace longDelayTests
         private CancellationTokenSource cts;
         protected string tmpPath;
         public string testName;
-        public abstract Task Run(CancellationTokenSource tokenSource);
+        public async Task Run(CancellationTokenSource cts)
+        {
+            if (!File.Exists(tmpPath))
+            {
+                File.WriteAllText(tmpPath, "[]");
+            }
+            foreach (var stage in testStages)
+            {
+                if (!stage.stageSuccessful)
+                {
+                    await stage.RunStage(cts);
+                }
+            }
+        }
         public Test()
         {
             string baseFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);

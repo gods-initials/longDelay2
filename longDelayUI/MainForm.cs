@@ -21,6 +21,7 @@ namespace longDelayUI
         string selectedProductID;
         private BindingList<TestOption> testOptions;
         private BindingList<TestOption> testsSelected;
+        private List<Test> testsExecuting;
         private BindingList<TestOutput> testsCompleted;
         private bool eventsLinked = false;
 
@@ -34,7 +35,7 @@ namespace longDelayUI
         public class TestOption
         {
             public string TestName { get; set; }
-            public Test Test { get; set; }
+            public Func<Test> CreateTest { get; set; }
         }
 
         public MainForm()
@@ -58,12 +59,12 @@ namespace longDelayUI
             {
                 newEntry.TestStageResult = json["stageError"].ToString();
                 MessageBox.Show("фейл");
-                btnStop_Click(null, null);
+                buttonPause_Click(null, null);
             }
             testsCompleted.Add(newEntry);
         }
 
-        private async void btnStart_Click(object sender, EventArgs e)
+        private void buttonCreateQueue_Click(object sender, EventArgs e)
         {
             selectedProductID = txtProductId.Text.Trim();
             if (string.IsNullOrEmpty(selectedProductID))
@@ -76,24 +77,31 @@ namespace longDelayUI
                 MessageBox.Show("Выберите один или несколько тестов.");
                 return;
             }
-            if (!eventsLinked)
+            testsExecuting = new List<Test> { };
+            foreach (var testOption in testsSelected)
             {
-                foreach (var testOption in testsSelected)
+                Test newTest = testOption.CreateTest();
+                foreach (TestStage ts in newTest.testStages)
                 {
-                    foreach (var stage in testOption.Test.testStages)
-                    {
-                        stage.StageCompleted += StageCompletedResponse;
-                    }
-                    eventsLinked = true;
-                }                
+                    ts.StageCompleted += StageCompletedResponse;
+                }
+                testsExecuting.Add(newTest);
             }
-            foreach (TestOption testOption in testsSelected)
+            buttonCreateQueue.Enabled = false;
+            buttonCancel.Enabled = true;
+            buttonContinue.Enabled = true;
+        }
+        private async void continueButton_Click(object sender, EventArgs e)
+        {
+            buttonContinue.Enabled = false;
+            buttonCancel.Enabled = false;
+            buttonPause.Enabled = true;
+            foreach (Test test in testsExecuting)
             {
-                btnStart.Enabled = false;
-                btnStop.Enabled = true;
+                buttonCancel.Enabled = true;
                 lblStatus.Text = "Статус: выполняется тест";
                 cts = new CancellationTokenSource();
-                currentTest = testOption.Test;         
+                currentTest = test;
                 try
                 {
                     await currentTest.Run(cts);
@@ -104,67 +112,73 @@ namespace longDelayUI
                 }
                 finally
                 {
-                    btnStart.Enabled = true;
-                    btnStop.Enabled = false;
+                    buttonCreateQueue.Enabled = true;
+                    buttonCancel.Enabled = false;
                     cts = null;
                     lblStatus.Text = "Статус: ожидается";
                 }
-                }
             }
-            /*
-            try
-            {
-                
-                Dictionary<string, string> results = currentTest.ReturnResults();
-                string path = Directory.GetCurrentDirectory();
-                if (!Directory.Exists(path + "\\results"))
-                {
-                    Directory.CreateDirectory(path + "\\results");
-                }
-                using (StreamWriter outputFile = new StreamWriter(path + $"\\results\\{productId}.txt"))
-                {
-                    if (results["testSuccessful"] == "True")
-                    {
-                        foreach (string key in results.Keys.Skip(2))
-                        {
-                            outputFile.WriteLine($"{key}: {results[key]}");
-                        }
-                    }
-                    else if (results["testSuccessful"] == "False")
-                    {
-                        outputFile.WriteLine($"error: {results["error"]}");
-                    }
-                    lblStatus.Text = "Статус: тест завершён. Результаты сохранены.";
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                lblStatus.Text = "Статус: ожидается";
-            }
-            finally
-            {
-                btnStart.Enabled = true;
-                btnStop.Enabled = false;
-                cts = null;
-            }
-            */
+        }
+        /*
+        try
+        {
 
-        private void btnStop_Click(object sender, EventArgs e)
+            Dictionary<string, string> results = currentTest.ReturnResults();
+            string path = Directory.GetCurrentDirectory();
+            if (!Directory.Exists(path + "\\results"))
+            {
+                Directory.CreateDirectory(path + "\\results");
+            }
+            using (StreamWriter outputFile = new StreamWriter(path + $"\\results\\{productId}.txt"))
+            {
+                if (results["testSuccessful"] == "True")
+                {
+                    foreach (string key in results.Keys.Skip(2))
+                    {
+                        outputFile.WriteLine($"{key}: {results[key]}");
+                    }
+                }
+                else if (results["testSuccessful"] == "False")
+                {
+                    outputFile.WriteLine($"error: {results["error"]}");
+                }
+                lblStatus.Text = "Статус: тест завершён. Результаты сохранены.";
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            lblStatus.Text = "Статус: ожидается";
+        }
+        finally
         {
             btnStart.Enabled = true;
             btnStop.Enabled = false;
+            cts = null;
+        }
+        */
+
+        private void buttonCancel_Click(object sender, EventArgs e)
+        {
+            buttonCreateQueue.Enabled = true;
+            buttonCancel.Enabled = false;
+            buttonContinue.Enabled = false;
+            buttonPause.Enabled = false;
             if (cts != null)
             {
                 cts.Cancel();
             }
+        }
+        private void buttonPause_Click(object sender, EventArgs e)
+        {
+
         }
 
         private void MainForm_Load(object sender, EventArgs e)
         {
             testOptions = new BindingList<TestOption>
             {
-                new TestOption { TestName = "Test 1", Test = new Test1() },
-                new TestOption { TestName = "Test 2", Test = new Test2() },
+                new TestOption { TestName = "Test 1", CreateTest = () => new Test1(), },
+                new TestOption { TestName = "Test 2", CreateTest = () => new Test2(), },
                 //new TestOption { TestName = "Test 3", Test = new Test3() },
             };
             availableTestsGridView.AutoGenerateColumns = false;

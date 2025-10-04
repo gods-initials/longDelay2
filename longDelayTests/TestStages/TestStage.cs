@@ -12,6 +12,7 @@ namespace longDelayTests.TestStages
 {
     public abstract class TestStage
     {
+        private Random rand;
         public string stageName;
         protected int stageDuration;
         public bool stageSuccessful;
@@ -44,6 +45,7 @@ namespace longDelayTests.TestStages
             }
             return false;
         }
+        public abstract void DoStageSpecific();
         protected void RemoveFailedStageEntry()
         {
             var existing = JArray.Parse(File.ReadAllText(tmpPath));
@@ -56,6 +58,30 @@ namespace longDelayTests.TestStages
         {
             StageFailed.Invoke(this);
         }
-        public abstract Task RunStage(CancellationTokenSource tokenSource);
+        public async Task RunStage(CancellationTokenSource cts)
+        {
+            rand = new Random();
+            stageError = "";
+            if (IsStageFinished())
+            {
+                Console.WriteLine($"{stageName} done");
+            }
+            else
+            {
+                await Task.Delay(stageDuration, cts.Token);
+                stageSuccessful = Convert.ToBoolean(rand.Next(0));
+                if (stageSuccessful)
+                {
+                    DoStageSpecific();
+                    RecordStage();
+                }
+                else
+                {
+                    cts.Cancel();
+                    stageError = "Произошла ошибка";
+                }
+                OnStageCompleted();
+            }
+        }
     }
 }

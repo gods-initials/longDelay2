@@ -3,8 +3,8 @@
     partial class MainForm
     {
         private System.ComponentModel.IContainer components = null;
-        private System.Windows.Forms.Button btnStart;
-        private System.Windows.Forms.Button btnStop;
+        private System.Windows.Forms.Button buttonCreateQueue;
+        private System.Windows.Forms.Button buttonCancel;
         private System.Windows.Forms.Label lblStatus;
         private System.Windows.Forms.Label lblIdLabel;
 
@@ -19,11 +19,15 @@
 
         private void InitializeComponent()
         {
-            this.btnStart = new System.Windows.Forms.Button();
-            this.btnStop = new System.Windows.Forms.Button();
+            this.buttonCreateQueue = new System.Windows.Forms.Button();
+            this.buttonCancel = new System.Windows.Forms.Button();
             this.lblStatus = new System.Windows.Forms.Label();
             this.lblIdLabel = new System.Windows.Forms.Label();
             this.testsCompletedGridView = new System.Windows.Forms.DataGridView();
+            this.productID = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.TestName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.testStageName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.testStageResult = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.txtProductId = new System.Windows.Forms.TextBox();
             this.availableTestsGridView = new System.Windows.Forms.DataGridView();
             this.availableTestName = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -33,33 +37,31 @@
             this.removeTestButton = new System.Windows.Forms.Button();
             this.moveUpButton = new System.Windows.Forms.Button();
             this.moveDownButton = new System.Windows.Forms.Button();
-            this.productID = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.TestName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.testStageName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.testStageResult = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.buttonContinue = new System.Windows.Forms.Button();
+            this.buttonPause = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.testsCompletedGridView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.availableTestsGridView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.selectedTestsGridView)).BeginInit();
             this.SuspendLayout();
             // 
-            // btnStart
+            // buttonCreateQueue
             // 
-            this.btnStart.Location = new System.Drawing.Point(23, 213);
-            this.btnStart.Name = "btnStart";
-            this.btnStart.Size = new System.Drawing.Size(99, 30);
-            this.btnStart.TabIndex = 4;
-            this.btnStart.Text = "Запустить";
-            this.btnStart.Click += new System.EventHandler(this.btnStart_Click);
+            this.buttonCreateQueue.Location = new System.Drawing.Point(23, 213);
+            this.buttonCreateQueue.Name = "buttonCreateQueue";
+            this.buttonCreateQueue.Size = new System.Drawing.Size(99, 30);
+            this.buttonCreateQueue.TabIndex = 4;
+            this.buttonCreateQueue.Text = "Выбрать тесты";
+            this.buttonCreateQueue.Click += new System.EventHandler(this.buttonCreateQueue_Click);
             // 
-            // btnStop
+            // buttonCancel
             // 
-            this.btnStop.Enabled = false;
-            this.btnStop.Location = new System.Drawing.Point(151, 213);
-            this.btnStop.Name = "btnStop";
-            this.btnStop.Size = new System.Drawing.Size(100, 30);
-            this.btnStop.TabIndex = 3;
-            this.btnStop.Text = "Остановить";
-            this.btnStop.Click += new System.EventHandler(this.btnStop_Click);
+            this.buttonCancel.Enabled = false;
+            this.buttonCancel.Location = new System.Drawing.Point(163, 213);
+            this.buttonCancel.Name = "buttonCancel";
+            this.buttonCancel.Size = new System.Drawing.Size(100, 30);
+            this.buttonCancel.TabIndex = 3;
+            this.buttonCancel.Text = "Отменить";
+            this.buttonCancel.Click += new System.EventHandler(this.buttonCancel_Click);
             // 
             // lblStatus
             // 
@@ -100,9 +102,37 @@
             this.testsCompletedGridView.TabIndex = 7;
             this.testsCompletedGridView.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.resultsGridView_CellContentClick);
             // 
+            // productID
+            // 
+            this.productID.DataPropertyName = "ProductID";
+            this.productID.HeaderText = "№ изделия";
+            this.productID.Name = "productID";
+            this.productID.ReadOnly = true;
+            // 
+            // TestName
+            // 
+            this.TestName.DataPropertyName = "TestName";
+            this.TestName.HeaderText = "Тест";
+            this.TestName.Name = "TestName";
+            this.TestName.ReadOnly = true;
+            // 
+            // testStageName
+            // 
+            this.testStageName.DataPropertyName = "TestStageName";
+            this.testStageName.HeaderText = "Этап";
+            this.testStageName.Name = "testStageName";
+            this.testStageName.ReadOnly = true;
+            // 
+            // testStageResult
+            // 
+            this.testStageResult.DataPropertyName = "TestStageResult";
+            this.testStageResult.HeaderText = "Результат";
+            this.testStageResult.Name = "testStageResult";
+            this.testStageResult.ReadOnly = true;
+            // 
             // txtProductId
             // 
-            this.txtProductId.Location = new System.Drawing.Point(150, 20);
+            this.txtProductId.Location = new System.Drawing.Point(116, 20);
             this.txtProductId.Name = "txtProductId";
             this.txtProductId.Size = new System.Drawing.Size(250, 20);
             this.txtProductId.TabIndex = 6;
@@ -204,37 +234,33 @@
             this.moveDownButton.UseVisualStyleBackColor = true;
             this.moveDownButton.Click += new System.EventHandler(this.moveDownButton_Click);
             // 
-            // productID
+            // buttonContinue
             // 
-            this.productID.DataPropertyName = "ProductID";
-            this.productID.HeaderText = "ID";
-            this.productID.Name = "productID";
-            this.productID.ReadOnly = true;
+            this.buttonContinue.Enabled = false;
+            this.buttonContinue.Location = new System.Drawing.Point(344, 213);
+            this.buttonContinue.Name = "buttonContinue";
+            this.buttonContinue.Size = new System.Drawing.Size(88, 30);
+            this.buttonContinue.TabIndex = 14;
+            this.buttonContinue.Text = "Продолжить";
+            this.buttonContinue.UseVisualStyleBackColor = true;
+            this.buttonContinue.Click += new System.EventHandler(this.continueButton_Click);
             // 
-            // TestName
+            // buttonPause
             // 
-            this.TestName.DataPropertyName = "TestName";
-            this.TestName.HeaderText = "Тест";
-            this.TestName.Name = "TestName";
-            this.TestName.ReadOnly = true;
-            // 
-            // testStageName
-            // 
-            this.testStageName.DataPropertyName = "TestStageName";
-            this.testStageName.HeaderText = "Этап";
-            this.testStageName.Name = "testStageName";
-            this.testStageName.ReadOnly = true;
-            // 
-            // testStageResult
-            // 
-            this.testStageResult.DataPropertyName = "TestStageResult";
-            this.testStageResult.HeaderText = "Результат";
-            this.testStageResult.Name = "testStageResult";
-            this.testStageResult.ReadOnly = true;
+            this.buttonPause.Enabled = false;
+            this.buttonPause.Location = new System.Drawing.Point(509, 213);
+            this.buttonPause.Name = "buttonPause";
+            this.buttonPause.Size = new System.Drawing.Size(75, 30);
+            this.buttonPause.TabIndex = 15;
+            this.buttonPause.Text = "Пауза";
+            this.buttonPause.UseVisualStyleBackColor = true;
+            this.buttonPause.Click += new System.EventHandler(this.buttonPause_Click);
             // 
             // MainForm
             // 
             this.ClientSize = new System.Drawing.Size(635, 596);
+            this.Controls.Add(this.buttonPause);
+            this.Controls.Add(this.buttonContinue);
             this.Controls.Add(this.moveDownButton);
             this.Controls.Add(this.moveUpButton);
             this.Controls.Add(this.removeTestButton);
@@ -244,8 +270,8 @@
             this.Controls.Add(this.testsCompletedGridView);
             this.Controls.Add(this.lblIdLabel);
             this.Controls.Add(this.lblStatus);
-            this.Controls.Add(this.btnStop);
-            this.Controls.Add(this.btnStart);
+            this.Controls.Add(this.buttonCancel);
+            this.Controls.Add(this.buttonCreateQueue);
             this.Controls.Add(this.txtProductId);
             this.Name = "MainForm";
             this.Text = " ";
@@ -268,6 +294,8 @@
         private System.Windows.Forms.Button moveDownButton;
         private System.Windows.Forms.DataGridViewTextBoxColumn availableTestName;
         private System.Windows.Forms.DataGridViewTextBoxColumn selectedTestName;
+        private System.Windows.Forms.Button buttonContinue;
+        private System.Windows.Forms.Button buttonPause;
         private System.Windows.Forms.DataGridViewTextBoxColumn productID;
         private System.Windows.Forms.DataGridViewTextBoxColumn TestName;
         private System.Windows.Forms.DataGridViewTextBoxColumn testStageName;

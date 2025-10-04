@@ -21,16 +21,5 @@ namespace longDelayTests
                 new TestStageInt(tmpPath) { stageName = "stageInt2" },
             };
         }
-        public override async Task Run(CancellationTokenSource cts)
-        {
-            if (!File.Exists(tmpPath))
-            {
-                File.WriteAllText(tmpPath, "[]");
-            }            
-            foreach (var stage in testStages)
-            {
-                await stage.RunStage(cts);
-            }
-        }
     }
 }

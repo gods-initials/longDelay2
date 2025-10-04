@@ -20,6 +20,12 @@ namespace longDelayTests.TestStages
             get => _stageOutput;
             set => _stageOutput = (int)value;
         }
+        public override void DoStageSpecific()
+        {
+            rand = new Random();
+            StageOutput = rand.Next(0, 100);
+        }
+        /*
         public override async Task RunStage(CancellationTokenSource cts)
         {
             rand = new Random();
@@ -31,7 +37,7 @@ namespace longDelayTests.TestStages
             else
             {
                 await Task.Delay(stageDuration, cts.Token);
-                stageSuccessful = Convert.ToBoolean(rand.Next(10));
+                stageSuccessful = Convert.ToBoolean(rand.Next(0));
                 if (stageSuccessful)
                 {
                     StageOutput = rand.Next(0, 100);
@@ -39,10 +45,12 @@ namespace longDelayTests.TestStages
                 }
                 else
                 {
+                    cts.Cancel();
                     stageError = "Произошла ошибка";
                 }                
                 OnStageCompleted();
             }          
         }
+        */
     }
 }

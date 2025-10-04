@@ -25,30 +25,10 @@ namespace longDelayTests.TestStages
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             return new string(Enumerable.Repeat(chars, rand.Next(1, 11)).Select(s => s[rand.Next(s.Length)]).ToArray());
         }
-        public override async Task RunStage(CancellationTokenSource cts)
+        public override void DoStageSpecific()
         {
             rand = new Random();
-            stageError = "";
-            if (IsStageFinished())
-            {
-                Console.WriteLine($"{stageName} done");
-            }
-            else
-            {
-                await Task.Delay(stageDuration, cts.Token);
-                stageSuccessful = Convert.ToBoolean(rand.Next(10));
-                if (stageSuccessful)
-                {
-                    StageOutput = RandomString();
-                    RecordStage();
-                }
-                else
-                {
-                    stageError = "Произошла ошибка";
-                }
-                OnStageCompleted();
-            }
-            
+            StageOutput = RandomString();
         }
     }
 }
