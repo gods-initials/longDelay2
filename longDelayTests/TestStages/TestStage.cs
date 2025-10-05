@@ -69,7 +69,7 @@ namespace longDelayTests.TestStages
             else
             {
                 await Task.Delay(stageDuration, cts.Token);
-                stageSuccessful = Convert.ToBoolean(rand.Next(0));
+                stageSuccessful = Convert.ToBoolean(rand.Next(2));
                 if (stageSuccessful)
                 {
                     DoStageSpecific();

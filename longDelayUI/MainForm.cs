@@ -24,7 +24,23 @@ namespace longDelayUI
         private List<Test> testsExecuting;
         private BindingList<TestOutput> testsCompleted;
         private bool eventsLinked = false;
+        private int testReruns;
 
+        private void RegenerateTestOptions()
+        {
+            testOptions = new BindingList<TestOption>
+            {
+                new TestOption { TestName = "Test 1", CreateTest = () => new Test1(), },
+                new TestOption { TestName = "Test 2", CreateTest = () => new Test2(), },
+                //new TestOption { TestName = "Test 3", Test = new Test3() },
+            };
+            testsSelected = new BindingList<TestOption> { };
+            testsCompleted = new BindingList<TestOutput> { };
+            availableTestsGridView.DataSource = testOptions;
+            selectedTestsGridView.DataSource = testsSelected;
+            testsCompletedGridView.DataSource = testsCompleted;
+            txtProductId.Clear();
+        }
         public struct TestOutput
         {
             public string ProductID { get; set; }
@@ -58,8 +74,29 @@ namespace longDelayUI
             else
             {
                 newEntry.TestStageResult = json["stageError"].ToString();
-                MessageBox.Show("фейл");
                 buttonPause_Click(null, null);
+                if (testReruns == 0) 
+                {
+                    DialogResult result = MessageBox.Show(
+                        "Этап теста завершился с ошибкой. Повторить?",
+                        "Ошибка",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Error
+                    );
+                    if (result == DialogResult.Yes)
+                    {
+                        //continueButton_Click(null, null);
+                        testReruns++;
+                    }
+                    else
+                    {
+                        testsExecuting.RemoveAt(0);
+                    }
+                }
+                else
+                {
+                    testsExecuting.RemoveAt(0);
+                }
             }
             testsCompleted.Add(newEntry);
         }
@@ -96,28 +133,29 @@ namespace longDelayUI
             buttonContinue.Enabled = false;
             buttonCancel.Enabled = false;
             buttonPause.Enabled = true;
-            foreach (Test test in testsExecuting)
+            try
             {
-                buttonCancel.Enabled = true;
-                lblStatus.Text = "Статус: выполняется тест";
                 cts = new CancellationTokenSource();
-                currentTest = test;
-                try
+                foreach (Test test in testsExecuting)
                 {
+                    testReruns = 0;
+                    lblStatus.Text = "Статус: выполняется тест";
+                    currentTest = test;
                     await currentTest.Run(cts);
                 }
-                catch (OperationCanceledException)
+                buttonCancel_Click(null, null);
+                lblStatus.Text = "Статус: ожидается";
+                cts = null;
+            }
+            catch (OperationCanceledException)
+            {
+                lblStatus.Text = "Статус: ожидается";
+                if (testsExecuting.Count == 0)
                 {
-                    lblStatus.Text = "Статус: ожидается";
-                }
-                finally
-                {
-                    buttonCreateQueue.Enabled = true;
-                    buttonCancel.Enabled = false;
-                    cts = null;
-                    lblStatus.Text = "Статус: ожидается";
+                    buttonCancel_Click(null, null);
                 }
             }
+            
         }
         /*
         try
@@ -163,34 +201,25 @@ namespace longDelayUI
             buttonCancel.Enabled = false;
             buttonContinue.Enabled = false;
             buttonPause.Enabled = false;
+            RegenerateTestOptions();
+        }
+        private void buttonPause_Click(object sender, EventArgs e)
+        {
             if (cts != null)
             {
                 cts.Cancel();
             }
-        }
-        private void buttonPause_Click(object sender, EventArgs e)
-        {
-
+            buttonPause.Enabled = false;
+            buttonContinue.Enabled = true;
+            buttonCancel.Enabled = true;
         }
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            testOptions = new BindingList<TestOption>
-            {
-                new TestOption { TestName = "Test 1", CreateTest = () => new Test1(), },
-                new TestOption { TestName = "Test 2", CreateTest = () => new Test2(), },
-                //new TestOption { TestName = "Test 3", Test = new Test3() },
-            };
             availableTestsGridView.AutoGenerateColumns = false;
-            availableTestsGridView.DataSource = testOptions;
-
-            testsSelected = new BindingList<TestOption> { };
             selectedTestsGridView.AutoGenerateColumns = false;
-            selectedTestsGridView.DataSource = testsSelected;
-
-            testsCompleted = new BindingList<TestOutput> { };
             testsCompletedGridView.AutoGenerateColumns = false;
-            testsCompletedGridView.DataSource = testsCompleted;
+            RegenerateTestOptions();
 
             string baseFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             string appFolder = Path.Combine(baseFolder, "longDelay2", "temp");
@@ -260,6 +289,11 @@ namespace longDelayUI
         }
 
         private void resultsGridView_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void txtProductId_TextChanged(object sender, EventArgs e)
         {
 
         }

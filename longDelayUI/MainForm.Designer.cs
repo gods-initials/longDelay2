@@ -136,6 +136,7 @@
             this.txtProductId.Name = "txtProductId";
             this.txtProductId.Size = new System.Drawing.Size(250, 20);
             this.txtProductId.TabIndex = 6;
+            this.txtProductId.TextChanged += new System.EventHandler(this.txtProductId_TextChanged);
             // 
             // availableTestsGridView
             // 
