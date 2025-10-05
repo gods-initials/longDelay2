@@ -32,7 +32,9 @@ namespace longDelayUI
             {
                 new TestOption { TestName = "Test 1", CreateTest = () => new Test1(), },
                 new TestOption { TestName = "Test 2", CreateTest = () => new Test2(), },
-                //new TestOption { TestName = "Test 3", Test = new Test3() },
+                new TestOption { TestName = "Test 3", CreateTest = () => new Test3(), },
+                new TestOption { TestName = "Test 4", CreateTest = () => new Test4(), },
+                new TestOption { TestName = "Test 5", CreateTest = () => new Test5(), },
             };
             testsSelected = new BindingList<TestOption> { };
             testsCompleted = new BindingList<TestOutput> { };
@@ -54,6 +56,27 @@ namespace longDelayUI
             public Func<Test> CreateTest { get; set; }
         }
 
+        public void ExportResults()
+        {
+            string path = Directory.GetCurrentDirectory();
+            if (!Directory.Exists(path + "\\results"))
+            {
+                Directory.CreateDirectory(path + "\\results");
+            }
+            using (StreamWriter outputFile = new StreamWriter(path + $"\\results\\{selectedProductID}.txt"))
+            {
+                foreach (var test in testsExecuting)
+                {
+                    outputFile.WriteLine($"Результаты {test.testName}:");
+                    foreach (var stage in test.testStages)
+                    {
+                        if (stage.stageSuccessful) outputFile.WriteLine($"Результаты {stage.stageName}: {stage.StageOutput}");
+                        else outputFile.WriteLine($"Результаты {stage.stageName}: {stage.stageError}");
+                    }
+                }
+                lblStatus.Text = "Статус: тест завершён. Результаты сохранены.";
+            }
+        }
         public MainForm()
         {
             InitializeComponent();
@@ -85,7 +108,7 @@ namespace longDelayUI
                     );
                     if (result == DialogResult.Yes)
                     {
-                        //continueButton_Click(null, null);
+                        continueButton_Click(null, null);
                         testReruns++;
                     }
                     else
@@ -127,6 +150,10 @@ namespace longDelayUI
             buttonCreateQueue.Enabled = false;
             buttonCancel.Enabled = true;
             buttonContinue.Enabled = true;
+            addTestButton.Enabled = false;
+            removeTestButton.Enabled = false;
+            moveDownButton.Enabled = false;
+            moveUpButton.Enabled = false;
         }
         private async void continueButton_Click(object sender, EventArgs e)
         {
@@ -144,6 +171,7 @@ namespace longDelayUI
                     await currentTest.Run(cts);
                 }
                 buttonCancel_Click(null, null);
+                ExportResults();
                 lblStatus.Text = "Статус: ожидается";
                 cts = null;
             }
@@ -157,43 +185,7 @@ namespace longDelayUI
             }
             
         }
-        /*
-        try
-        {
-
-            Dictionary<string, string> results = currentTest.ReturnResults();
-            string path = Directory.GetCurrentDirectory();
-            if (!Directory.Exists(path + "\\results"))
-            {
-                Directory.CreateDirectory(path + "\\results");
-            }
-            using (StreamWriter outputFile = new StreamWriter(path + $"\\results\\{productId}.txt"))
-            {
-                if (results["testSuccessful"] == "True")
-                {
-                    foreach (string key in results.Keys.Skip(2))
-                    {
-                        outputFile.WriteLine($"{key}: {results[key]}");
-                    }
-                }
-                else if (results["testSuccessful"] == "False")
-                {
-                    outputFile.WriteLine($"error: {results["error"]}");
-                }
-                lblStatus.Text = "Статус: тест завершён. Результаты сохранены.";
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            lblStatus.Text = "Статус: ожидается";
-        }
-        finally
-        {
-            btnStart.Enabled = true;
-            btnStop.Enabled = false;
-            cts = null;
-        }
-        */
+        
 
         private void buttonCancel_Click(object sender, EventArgs e)
         {
@@ -202,6 +194,10 @@ namespace longDelayUI
             buttonContinue.Enabled = false;
             buttonPause.Enabled = false;
             RegenerateTestOptions();
+            addTestButton.Enabled = true;
+            removeTestButton.Enabled = true;
+            moveDownButton.Enabled = true;
+            moveUpButton.Enabled = true;
         }
         private void buttonPause_Click(object sender, EventArgs e)
         {

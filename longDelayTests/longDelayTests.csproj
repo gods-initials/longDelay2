@@ -48,6 +48,9 @@
     <Compile Include="Test.cs" />
     <Compile Include="Test1.cs" />
     <Compile Include="Test2.cs" />
+    <Compile Include="Test3.cs" />
+    <Compile Include="Test4.cs" />
+    <Compile Include="Test5.cs" />
     <Compile Include="TestStages\TestStage.cs" />
     <Compile Include="TestStages\TestStageString.cs" />
     <Compile Include="TestStages\TestStageInt.cs" />

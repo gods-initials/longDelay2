@@ -1,0 +1,25 @@
+﻿using longDelayTests.TestStages;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace longDelayTests
+{
+    public class Test3 : Test
+    {
+        private CancellationTokenSource cts;
+        public Test3() : base()
+        {
+            testName = "Test 3";
+            testStages = new List<TestStage>
+            {
+                new TestStageInt(tmpPath) {stageName = "stageInt1"},
+                new TestStageString(tmpPath) {stageName = "stageString1"},
+                new TestStageInt(tmpPath) { stageName = "stageInt2" },
+            };
+        }
+    }
+}
