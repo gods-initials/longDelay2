@@ -20,11 +20,6 @@ namespace longDelayTests
                 new TestStageString(tmpPath) {stageName = "stageString2"},
                 new TestStageString(tmpPath) {stageName = "stageString3"},
                 new TestStageInt(tmpPath) { stageName = "stageInt1" },
-                new TestStageInt(tmpPath) { stageName = "stageInt2" },
-                /*
-                new TestStageInt(tmpPath) {stageName = "stageInt3"},
-                new TestStageInt(tmpPath) {stageName = "stageInt4"},
-                */
             };
 
         }

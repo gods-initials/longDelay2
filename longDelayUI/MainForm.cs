@@ -25,6 +25,27 @@ namespace longDelayUI
         private BindingList<TestOutput> testsCompleted;
         private bool eventsLinked = false;
         private int testReruns;
+        private SystemState currentSystemState;
+
+        private enum SystemState
+        {
+            Idle,
+            QueueCreated,
+            Running,
+            Paused,
+        }
+        private void SetSystemState(SystemState state)
+        {
+            currentSystemState = state;
+            buttonCreateQueue.Enabled = currentSystemState == SystemState.Idle;
+            buttonContinue.Enabled = currentSystemState == SystemState.QueueCreated || currentSystemState == SystemState.Paused;
+            buttonPause.Enabled = currentSystemState == SystemState.Running;
+            buttonCancel.Enabled = currentSystemState == SystemState.Paused || currentSystemState == SystemState.QueueCreated;
+            addTestButton.Enabled = currentSystemState == SystemState.Idle;
+            removeTestButton.Enabled = currentSystemState == SystemState.Idle;
+            moveDownButton.Enabled = currentSystemState == SystemState.Idle;
+            moveUpButton.Enabled = currentSystemState == SystemState.Idle;
+        }
 
         private void RegenerateTestOptions()
         {
@@ -126,6 +147,7 @@ namespace longDelayUI
 
         private void buttonCreateQueue_Click(object sender, EventArgs e)
         {
+            SetSystemState(SystemState.QueueCreated);
             selectedProductID = txtProductId.Text.Trim();
             if (string.IsNullOrEmpty(selectedProductID))
             {
@@ -147,19 +169,11 @@ namespace longDelayUI
                 }
                 testsExecuting.Add(newTest);
             }
-            buttonCreateQueue.Enabled = false;
-            buttonCancel.Enabled = true;
-            buttonContinue.Enabled = true;
-            addTestButton.Enabled = false;
-            removeTestButton.Enabled = false;
-            moveDownButton.Enabled = false;
-            moveUpButton.Enabled = false;
         }
+
         private async void continueButton_Click(object sender, EventArgs e)
         {
-            buttonContinue.Enabled = false;
-            buttonCancel.Enabled = false;
-            buttonPause.Enabled = true;
+            SetSystemState(SystemState.Running);
             try
             {
                 cts = new CancellationTokenSource();
@@ -182,36 +196,26 @@ namespace longDelayUI
                 {
                     buttonCancel_Click(null, null);
                 }
-            }
-            
-        }
-        
+            }            
+        }        
 
         private void buttonCancel_Click(object sender, EventArgs e)
         {
-            buttonCreateQueue.Enabled = true;
-            buttonCancel.Enabled = false;
-            buttonContinue.Enabled = false;
-            buttonPause.Enabled = false;
+            SetSystemState(SystemState.Idle);
             RegenerateTestOptions();
-            addTestButton.Enabled = true;
-            removeTestButton.Enabled = true;
-            moveDownButton.Enabled = true;
-            moveUpButton.Enabled = true;
         }
         private void buttonPause_Click(object sender, EventArgs e)
         {
+            SetSystemState(SystemState.Paused);
             if (cts != null)
             {
                 cts.Cancel();
             }
-            buttonPause.Enabled = false;
-            buttonContinue.Enabled = true;
-            buttonCancel.Enabled = true;
         }
 
         private void MainForm_Load(object sender, EventArgs e)
         {
+            SetSystemState(SystemState.Idle);
             availableTestsGridView.AutoGenerateColumns = false;
             selectedTestsGridView.AutoGenerateColumns = false;
             testsCompletedGridView.AutoGenerateColumns = false;
@@ -226,11 +230,6 @@ namespace longDelayUI
             }
         }
 
-        private void availableTestsGridView_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-            
-        }
-
         private void addTestButton_Click(object sender, EventArgs e)
         {
             if (testOptions.Count > 0)
@@ -239,11 +238,6 @@ namespace longDelayUI
                 testsSelected.Add(testOptions[transferId]);
                 testOptions.RemoveAt(transferId);
             }
-        }
-
-        private void selectedTestsGridView_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-
         }
 
         private void removeTestButton_Click(object sender, EventArgs e)
@@ -290,6 +284,16 @@ namespace longDelayUI
         }
 
         private void txtProductId_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void availableTestsGridView_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void selectedTestsGridView_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
 
         }

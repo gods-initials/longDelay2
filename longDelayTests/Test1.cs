@@ -18,7 +18,7 @@ namespace longDelayTests
             {
                 new TestStageInt(tmpPath) {stageName = "stageInt1"},
                 new TestStageString(tmpPath) {stageName = "stageString1"},
-                new TestStageInt(tmpPath) { stageName = "stageInt2" },
+                new TestStageInt(tmpPath) {stageName = "stageInt2"},
             };
         }
     }
