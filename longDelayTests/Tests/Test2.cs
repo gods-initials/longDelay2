@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using longDelayTests.TestStages;
 
-namespace longDelayTests
+namespace longDelayTests.Tests
 {
     public class Test2 : Test
     {

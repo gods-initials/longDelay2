@@ -6,18 +6,20 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace longDelayTests
+namespace longDelayTests.Tests
 {
-    public class Test4 : Test
+    public class Test5 : Test
     {
         private CancellationTokenSource cts;
-        public Test4() : base()
+        public Test5() : base()
         {
-            testName = "Test 4";
+            testName = "Test 5";
             testStages = new List<TestStage>
             {
                 new TestStageInt(tmpPath) {stageName = "stageInt1"},
-                new TestStageInt(tmpPath) {stageName = "stageInt2"},
+                new TestStageString(tmpPath) {stageName = "stageString1"},
+                new TestStageString(tmpPath) {stageName = "stageString2"},
+                new TestStageString(tmpPath) {stageName = "stageString3"},
             };
         }
     }

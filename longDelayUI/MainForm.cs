@@ -7,7 +7,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using longDelayTests;
+using longDelayTests.Tests;
 using longDelayTests.TestStages;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -18,12 +18,11 @@ namespace longDelayUI
     {
         private CancellationTokenSource cts = null;
         private Test currentTest;
-        string selectedProductID;
+        private string selectedProductID;
         private BindingList<TestOption> testOptions;
         private BindingList<TestOption> testsSelected;
         private List<Test> testsExecuting;
         private BindingList<TestOutput> testsCompleted;
-        private bool eventsLinked = false;
         private int testReruns;
         private SystemState currentSystemState;
 
@@ -34,19 +33,43 @@ namespace longDelayUI
             Running,
             Paused,
         }
+        public class TestOption
+        {
+            public string TestName { get; set; }
+            public Func<Test> CreateTest { get; set; }
+        }
+        public struct TestOutput
+        {
+            public string ProductID { get; set; }
+            public string TestName { get; set; }
+            public string TestStageName { get; set; }
+            public string TestStageResult { get; set; }
+        }
+        private string GetStateTitle(SystemState state)
+        {
+            string title = "";
+            if (state == SystemState.Idle) title = "Статус: ожидается";
+            if (state == SystemState.QueueCreated) title = "Статус: очередь создана";
+            if (state == SystemState.Running) title = "Статус: выполняется тест";
+            if (state == SystemState.Paused) title = "Статус: приостановлено";
+            return title;
+        }
         private void SetSystemState(SystemState state)
         {
             currentSystemState = state;
+
+            lblStatus.Text = GetStateTitle(state);
+
             buttonCreateQueue.Enabled = currentSystemState == SystemState.Idle;
             buttonContinue.Enabled = currentSystemState == SystemState.QueueCreated || currentSystemState == SystemState.Paused;
             buttonPause.Enabled = currentSystemState == SystemState.Running;
             buttonCancel.Enabled = currentSystemState == SystemState.Paused || currentSystemState == SystemState.QueueCreated;
+
             addTestButton.Enabled = currentSystemState == SystemState.Idle;
             removeTestButton.Enabled = currentSystemState == SystemState.Idle;
             moveDownButton.Enabled = currentSystemState == SystemState.Idle;
             moveUpButton.Enabled = currentSystemState == SystemState.Idle;
         }
-
         private void RegenerateTestOptions()
         {
             testOptions = new BindingList<TestOption>
@@ -64,19 +87,10 @@ namespace longDelayUI
             testsCompletedGridView.DataSource = testsCompleted;
             txtProductId.Clear();
         }
-        public struct TestOutput
+        public MainForm()
         {
-            public string ProductID { get; set; }
-            public string TestName { get; set; }
-            public string TestStageName { get; set; }
-            public string TestStageResult { get; set; }
+            InitializeComponent();
         }
-        public class TestOption
-        {
-            public string TestName { get; set; }
-            public Func<Test> CreateTest { get; set; }
-        }
-
         public void ExportResults()
         {
             string path = Directory.GetCurrentDirectory();
@@ -88,19 +102,15 @@ namespace longDelayUI
             {
                 foreach (var test in testsExecuting)
                 {
-                    outputFile.WriteLine($"Результаты {test.testName}:");
+                    outputFile.WriteLine($"{test.testName}:");
                     foreach (var stage in test.testStages)
                     {
-                        if (stage.stageSuccessful) outputFile.WriteLine($"Результаты {stage.stageName}: {stage.StageOutput}");
-                        else outputFile.WriteLine($"Результаты {stage.stageName}: {stage.stageError}");
+                        if (stage.stageSuccessful) outputFile.WriteLine($"{stage.stageName}: {stage.StageOutput}");
+                        else outputFile.WriteLine($"{stage.stageName}: {stage.stageError}");
                     }
+                    outputFile.WriteLine();
                 }
-                lblStatus.Text = "Статус: тест завершён. Результаты сохранены.";
             }
-        }
-        public MainForm()
-        {
-            InitializeComponent();
         }
         public void StageCompletedResponse(TestStage stageObj)
         {
@@ -114,11 +124,14 @@ namespace longDelayUI
             if (Convert.ToBoolean(json["stageSuccessful"]) == true)
             {
                 newEntry.TestStageResult = json["StageOutput"].ToString();
+                testsCompleted.Add(newEntry);
             }
             else
             {
                 newEntry.TestStageResult = json["stageError"].ToString();
-                buttonPause_Click(null, null);
+                SetSystemState(SystemState.Paused);
+                cts.Cancel();
+                /*
                 if (testReruns == 0) 
                 {
                     DialogResult result = MessageBox.Show(
@@ -129,7 +142,7 @@ namespace longDelayUI
                     );
                     if (result == DialogResult.Yes)
                     {
-                        continueButton_Click(null, null);
+                        _ = RunTests();
                         testReruns++;
                     }
                     else
@@ -141,13 +154,14 @@ namespace longDelayUI
                 {
                     testsExecuting.RemoveAt(0);
                 }
+                */
+                testsExecuting.RemoveAt(0);
+                testsCompleted.Add(newEntry);
+                throw new OperationCanceledException();
             }
-            testsCompleted.Add(newEntry);
         }
-
         private void buttonCreateQueue_Click(object sender, EventArgs e)
         {
-            SetSystemState(SystemState.QueueCreated);
             selectedProductID = txtProductId.Text.Trim();
             if (string.IsNullOrEmpty(selectedProductID))
             {
@@ -159,6 +173,7 @@ namespace longDelayUI
                 MessageBox.Show("Выберите один или несколько тестов.");
                 return;
             }
+            SetSystemState(SystemState.QueueCreated);
             testsExecuting = new List<Test> { };
             foreach (var testOption in testsSelected)
             {
@@ -170,35 +185,37 @@ namespace longDelayUI
                 testsExecuting.Add(newTest);
             }
         }
-
-        private async void continueButton_Click(object sender, EventArgs e)
+        private async Task RunTests()
         {
-            SetSystemState(SystemState.Running);
             try
             {
                 cts = new CancellationTokenSource();
                 foreach (Test test in testsExecuting)
                 {
                     testReruns = 0;
-                    lblStatus.Text = "Статус: выполняется тест";
                     currentTest = test;
                     await currentTest.Run(cts);
                 }
                 buttonCancel_Click(null, null);
-                ExportResults();
-                lblStatus.Text = "Статус: ожидается";
                 cts = null;
             }
             catch (OperationCanceledException)
             {
-                lblStatus.Text = "Статус: ожидается";
                 if (testsExecuting.Count == 0)
                 {
                     buttonCancel_Click(null, null);
                 }
-            }            
+            }
+            finally
+            {
+                ExportResults();
+            }
+        }
+        private async void continueButton_Click(object sender, EventArgs e)
+        {
+            SetSystemState(SystemState.Running);
+            await RunTests();
         }        
-
         private void buttonCancel_Click(object sender, EventArgs e)
         {
             SetSystemState(SystemState.Idle);
@@ -212,7 +229,6 @@ namespace longDelayUI
                 cts.Cancel();
             }
         }
-
         private void MainForm_Load(object sender, EventArgs e)
         {
             SetSystemState(SystemState.Idle);
@@ -229,7 +245,6 @@ namespace longDelayUI
                 File.Delete(filePath);
             }
         }
-
         private void addTestButton_Click(object sender, EventArgs e)
         {
             if (testOptions.Count > 0)
@@ -239,7 +254,6 @@ namespace longDelayUI
                 testOptions.RemoveAt(transferId);
             }
         }
-
         private void removeTestButton_Click(object sender, EventArgs e)
         {
             if (testsSelected.Count > 0)
@@ -249,7 +263,6 @@ namespace longDelayUI
                 testsSelected.RemoveAt(transferId);
             }
         }
-
         private void moveUpButton_Click(object sender, EventArgs e)
         {
             if (testsSelected.Count > 1 && selectedTestsGridView.CurrentCell.RowIndex > 0)
@@ -263,7 +276,6 @@ namespace longDelayUI
                 selectedTestsGridView.CurrentCell = selectedTestsGridView.Rows[transferId - 1].Cells[0];
             }
         }
-
         private void moveDownButton_Click(object sender, EventArgs e)
         {
             if (testsSelected.Count > 1 && selectedTestsGridView.CurrentCell.RowIndex < testsSelected.Count-1)
@@ -277,22 +289,18 @@ namespace longDelayUI
                 selectedTestsGridView.CurrentCell = selectedTestsGridView.Rows[transferId + 1].Cells[0];
             }
         }
-
         private void resultsGridView_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
 
         }
-
         private void txtProductId_TextChanged(object sender, EventArgs e)
         {
 
         }
-
         private void availableTestsGridView_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
 
         }
-
         private void selectedTestsGridView_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
 

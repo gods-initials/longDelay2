@@ -25,6 +25,7 @@ namespace longDelayTests.TestStages
         {
             tmpPath = path;
         }
+        /*
         protected void RecordStage()
         {
             var existing = JArray.Parse(File.ReadAllText(tmpPath));
@@ -45,18 +46,9 @@ namespace longDelayTests.TestStages
             }
             return false;
         }
-        public abstract void DoStageSpecific();
         protected void RemoveFailedStageEntry()
         {
             var existing = JArray.Parse(File.ReadAllText(tmpPath));
-        }
-        protected void OnStageCompleted()
-        {
-            StageCompleted.Invoke(this);
-        }
-        protected void OnStageFailed()
-        {
-            StageFailed.Invoke(this);
         }
         public async Task RunStage(CancellationTokenSource cts)
         {
@@ -69,11 +61,46 @@ namespace longDelayTests.TestStages
             else
             {
                 await Task.Delay(stageDuration, cts.Token);
-                stageSuccessful = Convert.ToBoolean(rand.Next(200));
+                stageSuccessful = Convert.ToBoolean(rand.Next(2));
                 if (stageSuccessful)
                 {
                     DoStageSpecific();
                     RecordStage();
+                }
+                else
+                {
+                    cts.Cancel();
+                    stageError = "Произошла ошибка";
+                }
+                OnStageCompleted();
+            }
+        }
+        */
+        public abstract void DoStageSpecific();
+        protected void OnStageCompleted()
+        {
+            StageCompleted.Invoke(this);
+        }
+        protected void OnStageFailed()
+        {
+            StageFailed.Invoke(this);
+        }
+        public async Task RunStage(CancellationTokenSource cts)
+        {
+            rand = new Random();
+            stageError = "";
+            if (!stageSuccessful)
+            {
+                Console.WriteLine($"{stageName} done");
+            }
+            else
+            {
+                await Task.Delay(stageDuration, cts.Token);
+                stageSuccessful = Convert.ToBoolean(rand.Next(2));
+                if (stageSuccessful)
+                {
+                    DoStageSpecific();
+                    //RecordStage();
                 }
                 else
                 {

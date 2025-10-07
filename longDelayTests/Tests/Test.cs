@@ -5,11 +5,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using longDelayTests.TestStages;
 
-namespace longDelayTests
+namespace longDelayTests.Tests
 {
     public abstract class Test
     {
         public List<TestStage> testStages;
+        public bool testCompleted;
 
         private CancellationTokenSource cts;
         protected string tmpPath;
@@ -22,10 +23,7 @@ namespace longDelayTests
             }
             foreach (var stage in testStages)
             {
-                if (!stage.stageSuccessful)
-                {
-                    await stage.RunStage(cts);
-                }
+                await stage.RunStage(cts);
             }
         }
         public Test()

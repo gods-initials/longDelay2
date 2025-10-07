@@ -45,12 +45,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Test.cs" />
-    <Compile Include="Test1.cs" />
-    <Compile Include="Test2.cs" />
-    <Compile Include="Test3.cs" />
-    <Compile Include="Test4.cs" />
-    <Compile Include="Test5.cs" />
+    <Compile Include="Tests\Test.cs" />
+    <Compile Include="Tests\Test1.cs" />
+    <Compile Include="Tests\Test2.cs" />
+    <Compile Include="Tests\Test3.cs" />
+    <Compile Include="Tests\Test4.cs" />
+    <Compile Include="Tests\Test5.cs" />
+    <Compile Include="TestQueue.cs" />
     <Compile Include="TestStages\TestStage.cs" />
     <Compile Include="TestStages\TestStageString.cs" />
     <Compile Include="TestStages\TestStageInt.cs" />
