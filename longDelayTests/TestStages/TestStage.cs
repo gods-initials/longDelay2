@@ -17,65 +17,14 @@ namespace longDelayTests.TestStages
         protected int stageDuration;
         public bool stageSuccessful;
         public string stageError;
-        protected string tmpPath;
+
         public event Action<TestStage> StageCompleted;
         public event Action<TestStage> StageFailed;
         public virtual object StageOutput { get; set; }
         public TestStage(string path)
         {
-            tmpPath = path;
+
         }
-        /*
-        protected void RecordStage()
-        {
-            var existing = JArray.Parse(File.ReadAllText(tmpPath));
-            var newJson = JObject.FromObject(this);
-            newJson.Remove("rand");
-            existing.Add(newJson);
-            File.WriteAllText(tmpPath, existing.ToString(Formatting.Indented));
-        }
-        protected bool IsStageFinished()
-        {
-            var existing = JArray.Parse(File.ReadAllText(tmpPath));
-            foreach (var item in existing)
-            {
-                if (item["stageName"].ToString() == stageName && Convert.ToBoolean(item["stageSuccessful"])==true)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-        protected void RemoveFailedStageEntry()
-        {
-            var existing = JArray.Parse(File.ReadAllText(tmpPath));
-        }
-        public async Task RunStage(CancellationTokenSource cts)
-        {
-            rand = new Random();
-            stageError = "";
-            if (IsStageFinished())
-            {
-                Console.WriteLine($"{stageName} done");
-            }
-            else
-            {
-                await Task.Delay(stageDuration, cts.Token);
-                stageSuccessful = Convert.ToBoolean(rand.Next(2));
-                if (stageSuccessful)
-                {
-                    DoStageSpecific();
-                    RecordStage();
-                }
-                else
-                {
-                    cts.Cancel();
-                    stageError = "Произошла ошибка";
-                }
-                OnStageCompleted();
-            }
-        }
-        */
         public abstract void DoStageSpecific();
         protected void OnStageCompleted()
         {
@@ -91,23 +40,22 @@ namespace longDelayTests.TestStages
             stageError = "";
             if (!stageSuccessful)
             {
-                Console.WriteLine($"{stageName} done");
-            }
-            else
-            {
                 await Task.Delay(stageDuration, cts.Token);
-                stageSuccessful = Convert.ToBoolean(rand.Next(2));
+                stageSuccessful = Convert.ToBoolean(rand.Next(200));
                 if (stageSuccessful)
                 {
                     DoStageSpecific();
-                    //RecordStage();
+                    OnStageCompleted();
                 }
                 else
                 {
-                    cts.Cancel();
                     stageError = "Произошла ошибка";
+                    OnStageFailed();
                 }
-                OnStageCompleted();
+            }
+            else
+            {
+                return;
             }
         }
     }

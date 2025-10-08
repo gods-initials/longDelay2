@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using longDelayTests.TestQueue;
 using longDelayTests.Tests;
 using longDelayTests.TestStages;
 using Newtonsoft.Json;
@@ -16,14 +17,11 @@ namespace longDelayUI
 {
     public partial class MainForm : Form
     {
-        private CancellationTokenSource cts = null;
-        private Test currentTest;
         private string selectedProductID;
         private BindingList<TestOption> testOptions;
         private BindingList<TestOption> testsSelected;
-        private List<Test> testsExecuting;
+        private TestQueue testQueue;
         private BindingList<TestOutput> testsCompleted;
-        private int testReruns;
         private SystemState currentSystemState;
 
         private enum SystemState
@@ -91,35 +89,14 @@ namespace longDelayUI
         {
             InitializeComponent();
         }
-        public void ExportResults()
-        {
-            string path = Directory.GetCurrentDirectory();
-            if (!Directory.Exists(path + "\\results"))
-            {
-                Directory.CreateDirectory(path + "\\results");
-            }
-            using (StreamWriter outputFile = new StreamWriter(path + $"\\results\\{selectedProductID}.txt"))
-            {
-                foreach (var test in testsExecuting)
-                {
-                    outputFile.WriteLine($"{test.testName}:");
-                    foreach (var stage in test.testStages)
-                    {
-                        if (stage.stageSuccessful) outputFile.WriteLine($"{stage.stageName}: {stage.StageOutput}");
-                        else outputFile.WriteLine($"{stage.stageName}: {stage.stageError}");
-                    }
-                    outputFile.WriteLine();
-                }
-            }
-        }
-        public void StageCompletedResponse(TestStage stageObj)
+        public void AddEntry(Test test, TestStage stageObj)
         {
             var json = JObject.FromObject(stageObj);
             var newEntry = new TestOutput
             {
                 ProductID = selectedProductID,
                 TestStageName = json["stageName"].ToString(),
-                TestName = currentTest.testName,
+                TestName = test.testName,
             };
             if (Convert.ToBoolean(json["stageSuccessful"]) == true)
             {
@@ -129,36 +106,28 @@ namespace longDelayUI
             else
             {
                 newEntry.TestStageResult = json["stageError"].ToString();
-                SetSystemState(SystemState.Paused);
-                cts.Cancel();
-                /*
-                if (testReruns == 0) 
-                {
-                    DialogResult result = MessageBox.Show(
-                        "Этап теста завершился с ошибкой. Повторить?",
-                        "Ошибка",
-                        MessageBoxButtons.YesNo,
-                        MessageBoxIcon.Error
-                    );
-                    if (result == DialogResult.Yes)
-                    {
-                        _ = RunTests();
-                        testReruns++;
-                    }
-                    else
-                    {
-                        testsExecuting.RemoveAt(0);
-                    }
-                }
-                else
-                {
-                    testsExecuting.RemoveAt(0);
-                }
-                */
-                testsExecuting.RemoveAt(0);
                 testsCompleted.Add(newEntry);
-                throw new OperationCanceledException();
             }
+        }
+        public void StageFailedResponse(Test test, TestStage stageObj)
+        {
+            AddEntry(test, stageObj);
+            DialogResult result = MessageBox.Show(
+                "Этап теста завершился с ошибкой. Повторить?",
+                "Ошибка",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Error
+            );
+            if ( result == DialogResult.No )
+            {
+                testQueue.Pop();
+            }
+            SetSystemState(SystemState.Running);
+            _ = testQueue.RunQueue();
+        }
+        public void StageCompletedResponse(Test test, TestStage stageObj)
+        {
+            AddEntry(test, stageObj);
         }
         private void buttonCreateQueue_Click(object sender, EventArgs e)
         {
@@ -174,60 +143,34 @@ namespace longDelayUI
                 return;
             }
             SetSystemState(SystemState.QueueCreated);
-            testsExecuting = new List<Test> { };
+            testQueue = new TestQueue(selectedProductID);
             foreach (var testOption in testsSelected)
             {
                 Test newTest = testOption.CreateTest();
-                foreach (TestStage ts in newTest.testStages)
-                {
-                    ts.StageCompleted += StageCompletedResponse;
-                }
-                testsExecuting.Add(newTest);
+                testQueue.Add(newTest);
             }
-        }
-        private async Task RunTests()
-        {
-            try
+            testQueue.StageCompleted += (t, s) => StageCompletedResponse(t, s);
+            testQueue.StageFailed += (t, s) => StageFailedResponse(t, s);
+            testQueue.QueuePaused += () => SetSystemState(SystemState.Paused);
+            testQueue.QueueCancelled += () =>
             {
-                cts = new CancellationTokenSource();
-                foreach (Test test in testsExecuting)
-                {
-                    testReruns = 0;
-                    currentTest = test;
-                    await currentTest.Run(cts);
-                }
-                buttonCancel_Click(null, null);
-                cts = null;
-            }
-            catch (OperationCanceledException)
-            {
-                if (testsExecuting.Count == 0)
-                {
-                    buttonCancel_Click(null, null);
-                }
-            }
-            finally
-            {
-                ExportResults();
-            }
+                SetSystemState(SystemState.Idle);
+                RegenerateTestOptions();
+            };
         }
         private async void continueButton_Click(object sender, EventArgs e)
         {
             SetSystemState(SystemState.Running);
-            await RunTests();
+            await testQueue.RunQueue();
         }        
         private void buttonCancel_Click(object sender, EventArgs e)
         {
-            SetSystemState(SystemState.Idle);
-            RegenerateTestOptions();
+            testQueue.Cancel();
         }
         private void buttonPause_Click(object sender, EventArgs e)
         {
             SetSystemState(SystemState.Paused);
-            if (cts != null)
-            {
-                cts.Cancel();
-            }
+            testQueue.Pause();
         }
         private void MainForm_Load(object sender, EventArgs e)
         {
