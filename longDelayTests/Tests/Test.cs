@@ -20,7 +20,7 @@ namespace longDelayTests.Tests
         private CancellationTokenSource cts;
         protected string tmpPath;
         public string testName;
-        public int testReruns;
+        public int testFails;
         public async Task Run(CancellationTokenSource cts)
         {
             if (!eventsLinked)
@@ -34,7 +34,7 @@ namespace longDelayTests.Tests
                     stage.StageFailed += s =>
                     {
                         StageFailed(this, s);
-                        testReruns++;
+                        testFails++;
                     };
                 }
                 eventsLinked = true;
@@ -53,7 +53,7 @@ namespace longDelayTests.Tests
         public Test()
         {
             eventsLinked = false;
-            testReruns = 0;
+            testFails = 0;
             /*
             string baseFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             string appFolder = Path.Combine(baseFolder, "longDelay2", "temp");

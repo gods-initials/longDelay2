@@ -122,8 +122,8 @@ namespace longDelayUI
             {
                 testQueue.Pop();
             }
-            SetSystemState(SystemState.Running);
-            _ = testQueue.RunQueue();
+            //SetSystemState(SystemState.Running);
+            //_ = testQueue.RunQueue();
         }
         public void StageCompletedResponse(Test test, TestStage stageObj)
         {
@@ -150,7 +150,11 @@ namespace longDelayUI
                 testQueue.Add(newTest);
             }
             testQueue.StageCompleted += (t, s) => StageCompletedResponse(t, s);
-            testQueue.StageFailed += (t, s) => StageFailedResponse(t, s);
+            testQueue.StageFailed += (t, s) =>
+            {
+                testQueue.Pause();
+                StageFailedResponse(t, s);
+            };
             testQueue.QueuePaused += () => SetSystemState(SystemState.Paused);
             testQueue.QueueCancelled += () =>
             {

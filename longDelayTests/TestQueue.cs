@@ -24,9 +24,6 @@ namespace longDelayTests.TestQueue
         public event Action QueuePaused;
         public event Action QueueCancelled;
 
-        public bool IsRunning { get; private set; }
-        public bool IsPaused => cts?.IsCancellationRequested ?? false;
-
         public TestQueue(string id, IEnumerable<Test> tests) : this(id)
         {
             foreach (var test in tests)
@@ -38,7 +35,6 @@ namespace longDelayTests.TestQueue
         {
             //StageFailed += (t, s) => Pause();
             selectedProductID = id;
-            IsRunning = false;
             queue = new Queue<Test>();
             exportQueue = new Queue<Test>();
         }
@@ -48,7 +44,7 @@ namespace longDelayTests.TestQueue
             test.StageCompleted += (t, s) => StageCompleted(t, s);
             test.StageFailed += (t, s) =>
             {
-                if (test.testReruns > 0)
+                if (test.testFails > 0)
                 {
                     OnTestFailed(t);
                 }
@@ -59,11 +55,10 @@ namespace longDelayTests.TestQueue
             };
             
         }
-        public void Pop() => queue.Dequeue();
         public async Task RunQueue()
         {
-            IsRunning = true;
-            cts = new CancellationTokenSource();
+            if (cts == null || cts.IsCancellationRequested)
+                cts = new CancellationTokenSource();
             while (queue.Count > 0)
             {
                 var test = queue.Peek();
@@ -75,8 +70,7 @@ namespace longDelayTests.TestQueue
                 }
                 catch (OperationCanceledException)
                 {
-                    IsRunning = false;
-                    if (test.testReruns > 0)
+                    if (test.testFails > 0)
                     {
                         OnTestFailed(test);
                     }
@@ -84,6 +78,10 @@ namespace longDelayTests.TestQueue
                     {
                         return;
                     }                        
+                }
+                finally
+                {
+                    cts.Dispose();
                 }
             }
             ExportResults();
@@ -121,10 +119,14 @@ namespace longDelayTests.TestQueue
             queue.Clear();
             QueueCancelled.Invoke();
         }
-        public void OnTestFailed(Test test)
+        public void Pop()
         {
             exportQueue.Enqueue(queue.Peek());
             queue.Dequeue();
+        }
+        public void OnTestFailed(Test test)
+        {
+            Pop();
             TestFailed?.Invoke(test);
         }
         public void OnStageFailed(Test test, TestStage stage)

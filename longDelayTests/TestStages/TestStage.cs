@@ -41,7 +41,7 @@ namespace longDelayTests.TestStages
             if (!stageSuccessful)
             {
                 await Task.Delay(stageDuration, cts.Token);
-                stageSuccessful = Convert.ToBoolean(rand.Next(200));
+                stageSuccessful = Convert.ToBoolean(rand.Next(1));
                 if (stageSuccessful)
                 {
                     DoStageSpecific();
