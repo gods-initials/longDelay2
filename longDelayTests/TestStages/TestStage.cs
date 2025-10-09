@@ -23,7 +23,7 @@ namespace longDelayTests.TestStages
         public virtual object StageOutput { get; set; }
         public TestStage(string path)
         {
-
+            stageSuccessful = false;
         }
         public abstract void DoStageSpecific();
         protected void OnStageCompleted()
@@ -33,6 +33,7 @@ namespace longDelayTests.TestStages
         protected void OnStageFailed()
         {
             StageFailed.Invoke(this);
+            throw new OperationCanceledException();
         }
         public async Task RunStage(CancellationTokenSource cts)
         {
@@ -40,17 +41,24 @@ namespace longDelayTests.TestStages
             stageError = "";
             if (!stageSuccessful)
             {
-                await Task.Delay(stageDuration, cts.Token);
-                stageSuccessful = Convert.ToBoolean(rand.Next(11));
-                if (stageSuccessful)
+                try
                 {
-                    DoStageSpecific();
-                    OnStageCompleted();
+                    await Task.Delay(stageDuration, cts.Token);
+                    stageSuccessful = Convert.ToBoolean(rand.Next(2));
+                    if (stageSuccessful)
+                    {
+                        DoStageSpecific();
+                        OnStageCompleted();
+                    }
+                    else
+                    {
+                        stageError = "Произошла ошибка";
+                        OnStageFailed();
+                    }
                 }
-                else
+                catch (TaskCanceledException)
                 {
-                    stageError = "Произошла ошибка";
-                    OnStageFailed();
+                    throw new OperationCanceledException(cts.Token);
                 }
             }
             else

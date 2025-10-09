@@ -21,21 +21,15 @@ namespace longDelayTests.Tests
         protected string tmpPath;
         public string testName;
         public int testFails;
+
         public async Task Run(CancellationTokenSource cts)
         {
             if (!eventsLinked)
             {
                 foreach (var stage in testStages)
                 {
-                    stage.StageCompleted += s =>
-                    {
-                        StageCompleted(this, s);
-                    };
-                    stage.StageFailed += s =>
-                    {
-                        StageFailed(this, s);
-                        testFails++;
-                    };
+                    stage.StageCompleted += s => OnStageCompleted(s);
+                    stage.StageFailed += s => OnStageFailed(s);
                 }
                 eventsLinked = true;
             }
@@ -46,20 +40,22 @@ namespace longDelayTests.Tests
             }
             */
             foreach (var stage in testStages)
-            {
+            {  
                 await stage.RunStage(cts);
+                if (!stage.stageSuccessful)
+                {
+                    break;
+                }
             }
         }
-        public Test()
+        private void OnStageCompleted(TestStage stage)
         {
-            eventsLinked = false;
-            testFails = 0;
-            /*
-            string baseFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string appFolder = Path.Combine(baseFolder, "longDelay2", "temp");
-            Directory.CreateDirectory(appFolder);
-            tmpPath = Path.Combine(appFolder, $"{Guid.NewGuid().ToString()}.tmp");
-            */
+            StageCompleted.Invoke(this, stage);
+        }
+        private void OnStageFailed(TestStage stage)
+        {
+            testFails++;
+            StageFailed.Invoke(this, stage);
         }
     }
 }

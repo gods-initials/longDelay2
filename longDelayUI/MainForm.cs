@@ -109,20 +109,26 @@ namespace longDelayUI
                 testsCompleted.Add(newEntry);
             }
         }
+        public void TestFailedResponse(Test test)
+        {
+            //testsCompleted.RemoveAt(testsCompleted.Count);
+            MessageBox.Show($"Тест {test.testName} не пройден");
+            SetSystemState(SystemState.Paused);
+        }
         public void StageFailedResponse(Test test, TestStage stageObj)
         {
             AddEntry(test, stageObj);
             DialogResult result = MessageBox.Show(
-                "Этап теста завершился с ошибкой. Повторить?",
+                "Этап теста завершился с ошибкой. Пропустить текущий тест?",
                 "Ошибка",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Error
             );
-            if ( result == DialogResult.No )
+            if ( result == DialogResult.Yes )
             {
                 testQueue.Pop();
             }
-            //SetSystemState(SystemState.Running);
+            SetSystemState(SystemState.Paused);
             //_ = testQueue.RunQueue();
         }
         public void StageCompletedResponse(Test test, TestStage stageObj)
@@ -154,6 +160,10 @@ namespace longDelayUI
             {
                 testQueue.Pause();
                 StageFailedResponse(t, s);
+            };
+            testQueue.TestFailed += (t) =>
+            {
+                TestFailedResponse(t);
             };
             testQueue.QueuePaused += () => SetSystemState(SystemState.Paused);
             testQueue.QueueCancelled += () =>

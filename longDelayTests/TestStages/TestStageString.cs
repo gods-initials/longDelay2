@@ -13,7 +13,7 @@ namespace longDelayTests.TestStages
         {
             stageName = "stageString";
             stageSuccessful = false;
-            stageDuration = 1000;
+            stageDuration = 500;
         }
         public override object StageOutput
         {
